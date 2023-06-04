@@ -2,8 +2,12 @@ import React from "react";
 import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
+import { server } from "../../server";
 import styles from "../../styles/styles";
 import { RxAvatar } from "react-icons/rx";
+import { toast } from "react-toastify";
+import axios from "axios";
+
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -11,27 +15,49 @@ const SignUp = () => {
   const [visible, setVisible] = useState("");
   const [avatar, setAvatar] = useState("");
 
-  const handlerSubmit = () => {
-    console.log("hehe");
-  };
-
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
+    console.log("have a file");
     setAvatar(file);
   };
 
+  const handleSubmit = async (e) => {
+    console.log("hehe");
+    e.preventDefault();
 
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
+
+    const newForm = new FormData();
+
+    newForm.append("file", avatar);
+    newForm.append("name", name);
+    newForm.append("email", email);
+    newForm.append("password", password);
+
+    axios
+      .post(`${server}/user/create-user`, newForm, config)
+      .then((res) => {
+        toast.success(res.data.message);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setAvatar();
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+      });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-6 lg">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-6">
           <div className="my-6 sm:mx-auto sm:w-full sm:max-w-md">
             <h2 className=" text-center  text-3xl font-extrabold text text-gray-900">
               Register your account
             </h2>
           </div>
-          <form className="space-y-6" action="">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="email"
@@ -43,7 +69,7 @@ const SignUp = () => {
                 <input
                   type="text"
                   name="text"
-                  autoComplete="text"
+                  autoComplete="name"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -103,7 +129,7 @@ const SignUp = () => {
               </div>
             </div>
 
-            <div className="">
+            <div>
               <label
                 htmlFor="avatar"
                 className="block text-sm font-medium text-gray-700"
@@ -113,7 +139,7 @@ const SignUp = () => {
                 <span className="inline-block h-8 w-8 rounded-full overflow-hidden">
                   {avatar ? (
                     <img
-                      src={avatar}
+                      src={URL.createObjectURL(avatar)}
                       alt="avatar"
                       className="h-full w-full object-cover rounded-full"
                     />
@@ -137,20 +163,18 @@ const SignUp = () => {
                 </label>
               </div>
             </div>
+
             <div>
               <button
                 type="submit"
-                className="group relative w-full h-[40px] flex justify-center py-2 px-4 border border-transparent text0-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="group relative w-full h-[40px] flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 Register account
               </button>
             </div>
             <div className={`${styles.noramlFlex} w-full`}>
               <h4>Already have an account</h4>
-              <Link
-                to="/login"
-                className="text-blue-600 pl-2 hover:underline "
-              >
+              <Link to="/login" className="text-blue-600 pl-2 hover:underline ">
                 {" "}
                 Sign In
               </Link>
